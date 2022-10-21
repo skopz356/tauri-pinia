@@ -136,7 +136,7 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
 
   // First load
   await load(pinia).then((store) => {
-    pinia.state.value = store;
+    pinia.state.value = { ...pinia.state.value, ...store };
 
     // connect read/write to saves
     pinia.use((ctx) => {
