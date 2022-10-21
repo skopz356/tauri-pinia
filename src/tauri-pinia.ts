@@ -139,6 +139,7 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
   // First load
   await load(pinia).then((store) => {
     _options.blacklist.forEach(key => {
+      console.log(pinia.state.value)
       const value = get(pinia.state.value, key);
       set(store, key, value);
     });
