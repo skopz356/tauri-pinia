@@ -2,7 +2,7 @@ import omit from 'omit-deep-lodash';
 
 export const removeBlackListedProperties = (
   storeObject: any,
-  blacklist: readonly string[]
+  blacklist: Record<string, any>
 ) => {
-  return omit(storeObject, ...blacklist);
+  return omit(storeObject, ...Object.keys(blacklist));
 };

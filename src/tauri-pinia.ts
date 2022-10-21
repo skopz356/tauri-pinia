@@ -6,7 +6,6 @@ import {
   writeFile
 } from '@tauri-apps/api/fs';
 import { debounce } from 'debounce';
-import get from 'lodash.get';
 import set from 'lodash.set';
 import { createPinia } from 'pinia';
 
@@ -17,7 +16,7 @@ const DEFAULT_SINGLEFILE_NAME = 'pinia.json';
 const DEFAULT_EXTENSION = 'json';
 
 type ConfigBase = {
-  readonly blacklist?: readonly string[];
+  readonly blacklist?: Record<string, any>;
 };
 
 type ConfigMonoFile = ConfigBase & {
@@ -138,10 +137,8 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
 
   // First load
   await load(pinia).then((store) => {
-    _options.blacklist.forEach(key => {
-      console.log(pinia.state.value)
-      const value = get(pinia.state.value, key);
-      set(store, key, value);
+    Object.keys(_options.blacklist).forEach(key => {
+      set(store, key, _options.blacklist[key]);
     });
 
     pinia.state.value = store;
