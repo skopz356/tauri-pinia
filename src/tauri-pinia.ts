@@ -3,9 +3,11 @@ import {
   createDir,
   readDir,
   readTextFile,
-  writeFile,
+  writeFile
 } from '@tauri-apps/api/fs';
 import { debounce } from 'debounce';
+import get from 'lodash.get';
+import set from 'lodash.set';
 import { createPinia } from 'pinia';
 
 import { replacer, reviver } from './json';
@@ -68,7 +70,7 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
                   [getStorename(file.name, _options.storeFilename)]: JSON.parse(
                     await readTextFile(file.path),
                     reviver
-                  ),
+                  )
                 };
               } catch (err) {
                 console.error('Could not read file', err);
@@ -86,7 +88,7 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
         await createDir('.', { recursive: true, dir: BaseDirectory.App });
         const store = JSON.parse(
           await readTextFile(_options.filename || DEFAULT_SINGLEFILE_NAME, {
-            dir: BaseDirectory.App,
+            dir: BaseDirectory.App
           }),
           reviver
         );
@@ -102,7 +104,7 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
   const save = debounce(async (storeId: string, store: any, fullStore: any) => {
     try {
       if (_options.singleFile === false) {
-        if(_options.blacklist) {
+        if (_options.blacklist) {
           store = removeBlackListedProperties(store, _options.blacklist);
         }
         console.log(`Saving store "${storeId}"`, store);
@@ -110,19 +112,19 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
         await writeFile(
           {
             contents: JSON.stringify(store, replacer, 2),
-            path: `stores/${getFilename(storeId, _options.storeFilename)}`,
+            path: `stores/${getFilename(storeId, _options.storeFilename)}`
           },
           { dir: BaseDirectory.App }
         );
       } else {
-        if(_options.blacklist) {
+        if (_options.blacklist) {
           fullStore = removeBlackListedProperties(fullStore, _options.blacklist);
         }
         console.log('Saving whole pinia', fullStore);
         await writeFile(
           {
             contents: JSON.stringify(fullStore, replacer, 2),
-            path: _options.filename || DEFAULT_SINGLEFILE_NAME,
+            path: _options.filename || DEFAULT_SINGLEFILE_NAME
           },
           { dir: BaseDirectory.App }
         );
@@ -136,7 +138,12 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
 
   // First load
   await load(pinia).then((store) => {
-    pinia.state.value = { ...pinia.state.value, ...store };
+    _options.blacklist.forEach(key => {
+      const value = get(pinia.state.value, key);
+      set(store, key, value);
+    });
+
+    pinia.state.value = store;
 
     // connect read/write to saves
     pinia.use((ctx) => {
