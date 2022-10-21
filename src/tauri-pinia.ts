@@ -9,16 +9,21 @@ import { debounce } from 'debounce';
 import { createPinia } from 'pinia';
 
 import { replacer, reviver } from './json';
+import { removeBlackListedProperties } from './utils';
 
 const DEFAULT_SINGLEFILE_NAME = 'pinia.json';
 const DEFAULT_EXTENSION = 'json';
 
-type ConfigMonoFile = {
+type ConfigBase = {
+  readonly blacklist: readonly string[];
+};
+
+type ConfigMonoFile = ConfigBase & {
   readonly singleFile: true;
   readonly filename?: string;
 };
 
-type ConfigMultiFiles = {
+type ConfigMultiFiles = ConfigBase & {
   readonly singleFile: false;
   readonly storeFilename?: Record<string, string>;
 };
@@ -97,6 +102,7 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
   const save = debounce(async (storeId: string, store: any, fullStore: any) => {
     try {
       if (_options.singleFile === false) {
+        store = removeBlackListedProperties(store, _options.blacklist);
         console.log(`Saving store "${storeId}"`, store);
 
         await writeFile(
@@ -107,6 +113,7 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
           { dir: BaseDirectory.App }
         );
       } else {
+        fullStore = removeBlackListedProperties(fullStore, _options.blacklist);
         console.log('Saving whole pinia', fullStore);
         await writeFile(
           {
