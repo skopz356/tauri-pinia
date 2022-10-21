@@ -137,8 +137,7 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
 
   // First load
   await load(pinia).then((store) => {
-    console.log(store !== {})
-    if(store !== {}) {
+    if(Object.entries(store).length !== 0) {
       Object.keys(_options.blacklist).forEach(key => {
         set(store, key, _options.blacklist[key]);
       });
