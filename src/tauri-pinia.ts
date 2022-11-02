@@ -51,8 +51,11 @@ function getStorename(
 type ConfigTauriPinia = ConfigMonoFile | ConfigMultiFiles;
 
 export async function tauriPinia(options?: ConfigTauriPinia) {
-  const _options: ConfigTauriPinia = Object.assign(
-    { singleFile: false, blacklistedStores: [] },
+  const _options: ConfigTauriPinia & {
+    readonly blacklist: Record<string, any>;
+    readonly blacklistedStores: readonly string[];
+  } = Object.assign(
+    { singleFile: false, blacklistedStores: [], blacklist: {} },
     options
   );
 
@@ -67,6 +70,7 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
             .map(async (file) => {
               try {
                 return {
+                  // @ts-ignore
                   [getStorename(file.name, _options.storeFilename)]: JSON.parse(
                     await readTextFile(file.path),
                     reviver
