@@ -17,6 +17,7 @@ const DEFAULT_EXTENSION = 'json';
 
 type ConfigBase = {
   readonly blacklist?: Record<string, any>;
+  readonly blacklistedStores?: readonly string[];
 };
 
 type ConfigMonoFile = ConfigBase & {
@@ -51,7 +52,7 @@ type ConfigTauriPinia = ConfigMonoFile | ConfigMultiFiles;
 
 export async function tauriPinia(options?: ConfigTauriPinia) {
   const _options: ConfigTauriPinia = Object.assign(
-    { singleFile: false },
+    { singleFile: false, blacklistedStores: [] },
     options
   );
 
@@ -149,8 +150,9 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
     pinia.use((ctx) => {
       // Saves on change
       ctx.store.$subscribe((mutation, state) => {
-        console.log(mutation, state);
-        save(mutation.storeId, state, pinia.state.value);
+        if(!_options.blacklistedStores.includes(mutation.storeId)) {
+          save(mutation.storeId, state, pinia.state.value);
+        }
       });
     });
   });
