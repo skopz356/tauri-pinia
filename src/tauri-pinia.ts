@@ -140,6 +140,8 @@ export async function tauriPinia(options?: ConfigTauriPinia) {
 
   const pinia = createPinia();
 
+  console.log('Pinia state', pinia.state.value)
+
   // First load
   await load(pinia).then((store) => {
     if(Object.entries(store).length !== 0) {
